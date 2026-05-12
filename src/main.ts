@@ -24,7 +24,10 @@ async function bootstrap() {
     new ClassSerializerInterceptor(app.get(Reflector)),
   );
   app.enableCors({
-    origin: "http://localhost:3000",
+    origin: [
+    "http://localhost:3000", 
+    "https://rental-frontend-orcin.vercel.app",
+    ],
     credentials: true,
   });
   const port = process.env.PORT || 3001;
