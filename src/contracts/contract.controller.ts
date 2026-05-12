@@ -11,7 +11,8 @@ import {
 
 import { ContractService } from './contract.service';
 import { CreateContractDto } from './dto/create-contract.dto';
-
+import { NotificationService } from '../notification/notification.service';
+import { GetUser } from '../common/decorators/get-user.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -41,6 +42,17 @@ export class ContractController {
   ) {
     return this.service.getContracts(query, req.user.id);
   }
+
+  // @Get("my")
+  // getMyContracts(
+  //   @GetUser() user,
+  //   @Query() query
+  // ) {
+  //   return this.service.getMyContracts(
+  //     query,
+  //     user.id
+  //   );
+  // }
 
   @Patch(':id/end')
   @Roles(Role.ADMIN, Role.LANDLORD)

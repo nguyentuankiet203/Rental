@@ -245,4 +245,21 @@ export class ContractService {
       lastPage: Math.ceil(total / limit),
     };
   }
+
+  async getMyContracts(query: any, tenantId: number) {
+    return this.contractRepo.find({
+      where: {
+        tenant: {
+          id: tenantId,
+        },
+      },
+      relations: [
+        "room",
+        "room.property",
+      ],
+      order: {
+        created_at: "DESC",
+      },
+    });
+  }
 }
