@@ -1,8 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { Role } from '../common/enum/role.enum';
-import { OneToMany } from 'typeorm';
-import { Room } from '../rooms/room.entity';
 export enum UserRole {
   ADMIN = 'ADMIN',
   LANDLORD = 'LANDLORD',
@@ -27,15 +25,18 @@ export class User {
   @Column({ nullable: true })
   phone!: string;
 
+  @Column({ nullable: true })
+  avatar?: string;
+
   @Column({
     type: 'enum',
     enum: Role,
-    default: Role.LANDLORD,
+    default: Role.TENANT,
   })
   role!: Role;
 
-  @OneToMany(() => Room, (room) => room.tenant)
-  rentedRooms!: Room[];
+  @Column({ nullable: true })
+  created_by?: number;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

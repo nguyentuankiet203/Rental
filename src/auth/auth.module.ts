@@ -19,9 +19,9 @@ import { ConfigService } from '@nestjs/config';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const secret = configService.get<string>('JWT_SECRET');
-        console.log('JWT_SECRET loaded:', secret ? 'Yes' : 'No');  // Debug
+        console.log('JWT_SECRET loaded:', secret ? 'Yes' : 'No');
         return {
-          secret: secret || 'default_secret_key',  // Fallback nếu không có
+          secret: secret || 'default_secret_key',
           signOptions: { expiresIn: '24h' },
         };
       },

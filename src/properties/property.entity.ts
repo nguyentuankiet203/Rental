@@ -17,7 +17,13 @@ export class Property {
   @OneToMany(() => Room, (room) => room.property)
   rooms!: Room[];
 
-  @ManyToOne(() => User, (user) => user.id, { nullable: false })  // Added relation
+  @ManyToOne(() => User, (user) => user.id, { nullable: false })
   @JoinColumn({ name: 'owner_id' })
   owner!: User;
+
+  @Column({ nullable: true })
+  image!: string;
+
+  @Column({ nullable: true })
+  description!: string;
 }

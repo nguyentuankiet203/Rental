@@ -1,32 +1,86 @@
 import {
-  UseGuards,
   Controller,
   Get,
-} from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { Roles } from '../common/decorators/roles.decorator';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Role } from '../common/enum/role.enum';
+  Post,
+  Body,
+  Delete,
+  UploadedFile,
+  UseInterceptors,
+  Query,
+  Param,
+  UseGuards,
+  Patch,
+  ParseIntPipe, Req
+} from "@nestjs/common";
 
-@Controller('users')
+import { AuthGuard } from "@nestjs/passport";
+import { FileInterceptor } from "@nestjs/platform-express";
+
+import { Roles } from "../common/decorators/roles.decorator";
+import { RolesGuard } from "../common/guards/roles.guard";
+
+import { Role } from "../common/enum/role.enum";
+
+import { UserService } from "./user.service";
+
+import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateUserDto } from "./dto/update-user.dto";
+
+@UseGuards(AuthGuard("jwt"), RolesGuard)
+@Controller("users")
 export class UsersController {
+  constructor(
+    private readonly userService: UserService,
+  ) {}
+
+  // GET ALL USERS
 
   @Get()
-  @Roles(Role.ADMIN)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  findAll() {
-    return 'Only admin can access';
+  @Roles(Role.ADMIN, Role.LANDLORD)
+  findAll(
+    @Query() query: any,
+    @Req() req: any,
+  ) {
+    return this.userService.findAll(query, req.user);
   }
-  @Get('my-rooms')
-  @Roles(Role.LANDLORD)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  myRooms() {
-    return 'Only landlord can see own rooms';
+
+  // CREATE USER
+
+  @Post()
+  @UseInterceptors(FileInterceptor("avatar"))
+  @Roles(Role.ADMIN, Role.LANDLORD)
+  createUser(
+    @Body() dto: CreateUserDto,
+    @Req() req,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.userService.createUser(
+      dto,
+      req.user,
+      file,
+    );
   }
-  @Get('my-room')
-  @Roles(Role.TENANT)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  myRoom() {
-    return 'Only tenant can see own room';
+
+  // UPDATE USER
+
+  @Patch(":id")
+  @Roles(Role.ADMIN, Role.LANDLORD, Role.TENANT)
+  @UseInterceptors(FileInterceptor("avatar"))
+  update(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() dto: UpdateUserDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.userService.update(id, dto, file);
+  }
+
+  // DELETE USER
+
+  @Delete(":id")
+  @Roles(Role.ADMIN, Role.LANDLORD)
+  deleteUser(
+    @Param("id", ParseIntPipe) id: number,
+  ) {
+    return this.userService.deleteUser(id);
   }
 }

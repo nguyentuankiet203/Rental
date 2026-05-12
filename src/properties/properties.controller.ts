@@ -1,20 +1,41 @@
-import { Controller, Get, Post, Body, Patch, Delete, Req, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Delete, Req, Param, UseGuards,
+  UploadedFile, UseInterceptors, ParseIntPipe
+ } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { PropertyService } from './property.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enum/role.enum';
+import { GetUser } from '../common/decorators/get-user.decorator';
+import { UploadService } from "../upload/upload.service";
 
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('properties')
 export class PropertyController {
-  constructor(private readonly service: PropertyService) {}
+  constructor(
+    private readonly service: PropertyService,
+    // private readonly uploadService: UploadService,
+  ) {}
 
   @Post()
+  @UseInterceptors(FileInterceptor("image"))
   @Roles(Role.ADMIN, Role.LANDLORD)
-  create(@Req() req, @Body() dto: CreatePropertyDto) {
-    return this.service.create(req.user, dto);  // req.user là User object từ JWT strategy
+  async create(
+    @GetUser() user,
+    @Body() dto: CreatePropertyDto,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    return this.service.create(user, dto, file);
+  }
+
+  @Get(":propertyId")
+  findByProperty(
+    @GetUser() user,
+    @Param("propertyId") propertyId: string
+  ) {
+    return this.service.findOne(user, +propertyId);
   }
 
   @Get()
@@ -30,9 +51,22 @@ export class PropertyController {
   }
 
   @Patch(':id')
+  @UseInterceptors(FileInterceptor('image'))
   @Roles(Role.ADMIN, Role.LANDLORD)
-  update(@Req() req, @Param('id') id: string, @Body() dto: Partial<CreatePropertyDto>) {
-    return this.service.update(req.user, +id, dto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @GetUser() user,
+    @Body() dto: Partial<CreatePropertyDto>,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    console.log(file);
+
+    return this.service.update(
+      user,
+      id,
+      dto,
+      file,
+    );
   }
 
   @Delete(':id')
