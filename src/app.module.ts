@@ -31,7 +31,7 @@ dotenv.config();
         },
         family: 4,
       },
-
+      // logging: true,
       autoLoadEntities: true,
       synchronize: true,
     }),

@@ -9,14 +9,13 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enum/role.enum';
 import { GetUser } from '../common/decorators/get-user.decorator';
-import { UploadService } from "../upload/upload.service";
+
 
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('properties')
 export class PropertyController {
   constructor(
     private readonly service: PropertyService,
-    // private readonly uploadService: UploadService,
   ) {}
 
   @Post()

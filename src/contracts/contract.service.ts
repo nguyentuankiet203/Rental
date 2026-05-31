@@ -10,6 +10,7 @@ import { Contract, ContractStatus } from './contract.entity';
 import { Room } from '../rooms/room.entity';
 import { User } from '../users/user.entity';
 import { CreateContractDto } from './dto/create-contract.dto';
+import { UpdateContractDto } from './dto/update-contract.dto';
 import { RoomStatus } from '../common/enum/enum_status';
 import { Role } from '../common/enum/role.enum';
 
@@ -209,7 +210,7 @@ export class ContractService {
       page = 1,
       limit = 10,
     } = query;
-
+    console.log("search value:", search, "| type:", typeof search);
     const qb = this.contractRepo
       .createQueryBuilder("c")
       .leftJoinAndSelect("c.room", "r")
@@ -224,7 +225,7 @@ export class ContractService {
     if (status) {
       qb.andWhere("c.status = :status", { status });
     }
-
+    console.log("search:", JSON.stringify(search), "truthy?", !!search);
     if (search) {
       qb.andWhere(
         `(t.name ILIKE :search OR t.email ILIKE :search)`,
@@ -262,4 +263,39 @@ export class ContractService {
       },
     });
   }
+
+  async getContractById(contractId: number, landlordId: number,) {
+    const contract = await this.contractRepo
+      .createQueryBuilder("c")
+      .leftJoinAndSelect("c.room", "r")
+      .leftJoinAndSelect("r.property", "p")
+      .leftJoinAndSelect("c.tenant", "t")
+      .where("c.id = :contractId", { contractId })
+      .andWhere("p.owner_id = :landlordId", { landlordId })
+      .getOne();
+
+    if (!contract) {
+    throw new NotFoundException("Contract not found");
+    }
+    return contract;
+  }
+
+  async updateContract(contractId: number, landlordId: number, dto: UpdateContractDto,) {
+    const contract = await this.contractRepo
+    .createQueryBuilder("c")
+    .leftJoinAndSelect("c.room", "r")
+    .leftJoinAndSelect("r.property", "p")
+    .where("c.id = :contractId", { contractId })
+    .andWhere("p.owner_id = :landlordId", { landlordId })
+    .getOne();
+
+    if (!contract) {
+    throw new NotFoundException("Contract not found");
+    }
+
+    Object.assign(contract, dto);
+
+    return await this.contractRepo.save(contract);
+  }
+
 }
